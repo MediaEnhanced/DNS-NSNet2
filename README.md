@@ -45,7 +45,7 @@ TO ADD
 TO ADD
 
 ## Other Projects for the Future
-1. How to (re)-train the neurual network data from the DNS Challenge set
+1. How to (re)-train the neural network data from the DNS Challenge set
 2. Optimized version of RNNoise project with prinicples taken from this project
-3. New noise reduction project utilizing neurual networks and ideas taken from other projects and published works
+3. New noise reduction project utilizing neural networks and ideas taken from other projects and published works
 4. TO ADD
