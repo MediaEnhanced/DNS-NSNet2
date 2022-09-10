@@ -28,7 +28,8 @@ ffmpeg.exe -i inputFile -vn -ac 1 output.wav
 1. Works only with 48kHz 1-Channel (Mono) Wave Audio Files
 2. Offline Version Released Only
 3. Does not convert 2-Channel (Stereo) Audio
-4. TO ADD
+4. Real-time version is RAM memory bound (operates on ~23.5MB of data for every 10ms of converted audio)
+5. TO ADD
 
 ## Planned Features
 1. Live Version
