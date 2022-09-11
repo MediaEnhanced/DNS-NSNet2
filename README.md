@@ -11,7 +11,7 @@
 7. Simple to Modify and Compile
 8. Thorough Explanation (with diagrams) of how NSNet2 Works towards creating Effective Noise Reduction
 9. Thorough Explanation (with diagrams) of what the code is doing and why it was written that way
-10. Does not rely on math or general matrix calculation libraries
+10. No reliance on math or general matrix calculation libraries for any repeating calculations
 
 ## How To Use It
 ### Very Basic Conversion using Command Prompt (Windows Powershell) on Windows
@@ -29,19 +29,41 @@ ffmpeg.exe -i inputFile -vn -ac 1 output.wav
 2. Offline Version Released Only
 3. Does not convert 2-Channel (Stereo) Audio
 4. Real-time version is RAM memory bound (operates on ~23.5MB of data for every 10ms of converted audio)
-5. TO ADD
+5. Minimal WAVE file error checking
+6. Only works on Windows OS (Tested with fresh install of Windows 10)
+7. TO ADD
 
 ## Planned Features
 1. Live Version
 2. 2-Channel Convert; Each channel seperately and mixed stereo to mono then convert
 3. Multithreading Capability
 4. Adjustable RAM usuage (might increase offline processing speed by a tiny amount)
-5. TO ADD
+5. More Code documentation
+6. Linux and FreeBSD support
+7. TO ADD
 
 ## How to Compile It
+### Setup and Necessary Libraries
+All C code is currently written to be compiled with gcc for Windows using the MinGW-w64 software. Latest versions can be found [here](https://winlibs.com/). The C code will be modified in the future to be compiled with gcc no-matter the operating system.
+
+All x64 Assembly code (currently containing only subroutine functions) were written to be assembled by the [flat assembler](https://flatassembler.net/download.php) (FASM). The assembly code contains the functions that do the main processing and make AVX2 and FMA calls. The assembled object files get linked into the final executable by gcc / ld
+
+The [FFTW](https://www.fftw.org/) library is used for performing the Discrete Fourier Transform (DFT) and its inverse. The single-percision floating point static library version (for Windows) needs to be compiled and will get linked into the final executable by gcc / ld. In the current source of FFTW, [CMAKE](https://cmake.org/) can be used with MinGW-w64 on Windows to create the static libray after a couple of modifications. The memory allocation file needs to be modified before utilizing the CMAKE script and the script needs to specify the following options.
+
+### Compiling the Assembly
+FASM makes it easy to assemble the x64 assembly code simply by running:
+```
+fasm.exe asmFile.asm
+```
+This will create an asmFile.o file in the same directory that can be used with gcc
+
+### Creating the Hann Window Object File
 TO ADD
 
-## How to Modify It
+### Compile the main C source files (including main.c) and linking in the other object files
+TO ADD
+
+## What Should Be Modified First?
 TO ADD
 
 ## Other Projects for the Future
