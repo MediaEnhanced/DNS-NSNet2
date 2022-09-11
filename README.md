@@ -4,7 +4,7 @@
 ## What Are the Project Goals? (Features)
 1. Noise Reduction of Speech Audio
 2. Usable, Fast, and Simple Versions of NSNet2
-3. Input wave (.wav) audio file -> Output equivalent wave audio file where the raw audio data has been noise suppressed
+3. Input wave (.wav) audio file -> Output equivalent audio file where the raw audio data has been noise suppressed
 4. Real-Time (Live) and Offline (Non-Live) Versions
 5. Low RAM Usage for the same processing speed as the original NSNet2 (for Offline Version)
 6. Utilize Single Instruction Multiple Data Instructions (AVX2 and FMA) of modern x64 CPUs
@@ -29,9 +29,10 @@ ffmpeg.exe -i inputFile -vn -ac 1 output.wav
 2. Offline Version Released Only
 3. Does not convert 2-Channel (Stereo) Audio
 4. Real-time version is RAM memory bound (operates on ~23.5MB of data for every 10ms of converted audio)
-5. Minimal WAVE file error checking
+5. Too basic and minimal WAVE file error checking
 6. Only works on Windows OS (Tested with fresh install of Windows 10)
-7. TO ADD
+7. Requires a newish x64 CPU with AVX2 and FMA support
+8. TO ADD
 
 ## Planned Features
 1. Live Version
