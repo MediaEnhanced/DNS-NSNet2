@@ -2,6 +2,7 @@
 &emsp;&emsp;NSNet2 is a deep learning artificial recurrent neural network (RNN) used for background noise reduction in speech audio files. Microsoft originally released NSNet2 as an updated comparision baseline for their annual Deep Noise Suppression (DNS) [challenge](https://github.com/microsoft/DNS-Challenge/tree/master/NSNet2-baseline), but it is inconvient to use and is not suited for real-time conversion. Use of the released NSNet2 model requires correct versions of Python and supporting libarires (including PyTorch and [ONNXruntime](https://github.com/microsoft/onnxruntime)) to be installed and properly linked together, which are all relatively big packages just to run this one neural network model. Running NSNet2 without any changes uses massive amounts of uneccessary memory (RAM) that scales with the size of the audio file.
 
 &emsp;&emsp;Currently there are not many wide-range, pre-trained, and effective noise suppressors for speech that can be used easily. Projects like [RNNoise](https://github.com/xiph/rnnoise) have several quirks, but NSNet2 can be the next-step-up for fine-tuning captured speech. NSNet2 just needed to be converted to a version that more people looking for additional audio filters for recorded speech could utilize, which is the major focus of this project. This nameless project is a user friendly conversion of the NSNet2 released by Microsoft Research.
+  
 &nbsp;
 
 ## What Are the Project Goals? (Features)
@@ -15,6 +16,8 @@
 * Thorough Explanation (with diagrams) of what the code is doing and why it was written that way
 * Simple to Compile and Modify
 * No reliance on math or general matrix calculation libraries for any repeating calculations
+  
+&nbsp;
 
 ## Slightly More Background
 &emsp;&emsp;This project was created as a starting point into creating open audio noise reduction software. Audio noise suppression research (with and without using neural networks) produces various publications and snippets throughout the web but rarely leads to open (and pre-trained) usable software. Deep learning models get compared in the Microsoft DNS-challenge and while some of the model designs are published (usually with only minimal information) the exact implementations and trained model parameter values are kept private. However, these light publications sometimes give enough information that the network model can be mostly recreated or be useful to synthesize hybrid designs. Models can then be trained with customizeable training file sets (like the one from the DNS-challenge). The final results could then be run through a comparison process against each other and possibly against the DNS-challenge results.
@@ -22,12 +25,14 @@
 &emsp;&emsp;Since NSNet2 was published with the exact implementation and trained values, converting the model to a more user friendly version was straightforward. The model was published in the open ONNX format, which meant testing if the ONNX runtime software could be used as the main and biggest dependency alongside compileable code. Unfortunately the current ONNX runtime software suffers from the innability to carry over the model's Gated Recurrent Unit (GRU) hidden states from a previous run which is the biggest reason it is unsuitable for real-time versions of NSNet2. The model value data was extracted (and reorganized) from the ONNX file to be used with the converted version of the model.
 
 TO ADD (software / code principles and links to detailed explanation site with examples)
+  
+&nbsp;
 
 ## How To Use It
 
 ### Basic Conversion using a Modern Windows x64 Computer
-1. Convert a video or audio file to a WAVE (.wav) audio file using [ffmpeg] (https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z) and the Command Prompt (or Windows Powershell)
-```ffmpeg.exe -i inputFile -vn -ac 1 output.wav```
+1. Convert a video or audio file to a WAVE (.wav) audio file using [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-full-shared.7z) and the Command Prompt (or Windows Powershell)  
+```ffmpeg.exe -i inputFile -vn -ac 1 output.wav```  
 where "-vn" removes any video element and "-ac 1" mixes the audio into one channel (mono)
 2. Run (Double-click) the latest [NSNet2Offline.exe](https://github.com/MediaEnhanced/DNS-NSNet2/releases/download/v0.1/NSNet2Offline.zip) executable downloaded from the releases page of this project
 3. Navigate to and select the "output.wav" audio file created in step 1
@@ -40,7 +45,8 @@ TO ADD (use ffmpeg)
 
 ### Audio Files with "Louder" but Consistent Background Noise
 TO ADD (pre-process with Audacity Noise Reduction Effect)
-
+  
+&nbsp;
 
 ## Current Limitations; Version 0.1
 1. Works only with 48kHz 1-Channel (Mono) Wave Audio Files
@@ -51,6 +57,8 @@ TO ADD (pre-process with Audacity Noise Reduction Effect)
 6. Only works on Windows OS (Tested with fresh install of Windows 10)
 7. Requires a newish x64 CPU with AVX2 and FMA support
 8. TO ADD
+  
+&nbsp;
 
 ## Planned Features
 1. Live Version
@@ -60,6 +68,8 @@ TO ADD (pre-process with Audacity Noise Reduction Effect)
 5. More Code documentation
 6. Linux and FreeBSD support
 7. TO ADD
+  
+&nbsp;
 
 ## How to Compile It (with Windows)
 
@@ -74,15 +84,21 @@ The [FFTW](https://www.fftw.org/) library is used for performing the Discrete Fo
 The Makefile can be used to create the executables found on the release page. MinGW-w64 comes with Make that can process the Makefile to compile the source code once MinGW binaries and FASM binaries are added to the path. Using the Command Prompt (or Windows Powershell) change directory into the root folder of this project and run: ```mingw32-make.exe```
 
 The resulting executable and necessary networkData.bin file can be found in the bin subdirectory. The Makefile directs Make to use both gcc and FASM to create the intermediate object files from the source code which then get linked together with the fftw libaray in the executable by gcc / ld
+  
+&nbsp;
 
 ## What Can Be Modified?
 TO ADD
+  
+&nbsp;
 
 ## Other Projects for the Future
 1. How to (re)-train the neural network data from the DNS Challenge set
 2. Optimized version of RNNoise project with prinicples taken from this project
 3. New noise reduction project utilizing neural networks and ideas taken from other projects and published works
 4. TO ADD
+  
+&nbsp;
 
 ## How to Reach The Developer
 Email me: Jared.Loewenthal@proton.me
