@@ -1,7 +1,6 @@
 # Object files
 *.o
-# Exception
-!hannWindow.o
+*.data
 
 # Libraries
 *.lib
@@ -15,3 +14,6 @@
 
 # Executables
 *.exe
+
+# Sound Files
+*.wav

@@ -42,7 +42,7 @@
 
 #include "Win32Performance.h" //Windows Performance Counter Helper File
 
-#define CONVERSION_SEGMENTS 2000 //20sec converted at a time, can be changed to 1 for quasi-realtime live version version
+#define CONVERSION_SEGMENTS 2000 //20sec converted at a time, can be changed to 1 for quasi-realtime live version
 #define EXTRA_TIMING 0
 
 //link in externaly created hannWindow.o "compiled" data file

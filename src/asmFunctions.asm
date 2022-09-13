@@ -100,7 +100,12 @@ windowDataToOutData16:
 		vmovaps ymm7, [rdx + 0x60]
 		add rdx, 0x80
 		
-		vfmadd213ps ymm0, ymm4, [r8 + 0x00]
+		;vmulps ymm0, ymm0, ymm0
+		;vmulps ymm1, ymm1, ymm1
+		;vmulps ymm2, ymm2, ymm2
+		;vmulps ymm3, ymm3, ymm3
+		
+		vfmadd213ps ymm0, ymm4, [r8 + 0x00] ;ymm0 = ymm4 * ymm0 + [data]
 		vfmadd213ps ymm1, ymm5, [r8 + 0x20]
 		vfmadd213ps ymm2, ymm6, [r8 + 0x40]
 		vfmadd213ps ymm3, ymm7, [r8 + 0x60]
