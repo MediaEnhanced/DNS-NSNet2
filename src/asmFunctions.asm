@@ -100,11 +100,6 @@ windowDataToOutData16:
 		vmovaps ymm7, [rdx + 0x60]
 		add rdx, 0x80
 		
-		;vmulps ymm0, ymm0, ymm0
-		;vmulps ymm1, ymm1, ymm1
-		;vmulps ymm2, ymm2, ymm2
-		;vmulps ymm3, ymm3, ymm3
-		
 		vfmadd213ps ymm0, ymm4, [r8 + 0x00] ;ymm0 = ymm4 * ymm0 + [data]
 		vfmadd213ps ymm1, ymm5, [r8 + 0x20]
 		vfmadd213ps ymm2, ymm6, [r8 + 0x40]
@@ -278,6 +273,91 @@ windowDataToOutData32:
 	jnz .innerLoop2
 	
 ret ;End of windowDataToOutData32
+
+
+public absClampLog
+absClampLog:
+;rax: return value, rcx: fftDataPtr, rdx: fftAbsPtr, r8: logConstantPtr, r9: conversions
+	strideBytes = 0x820 ; Bytes between real and imaginary numbers
+	
+	vbroadcastss ymm0, [r8 + 0x00] ;+1.0f
+	vbroadcastss ymm1, [r8 + 0x04] ;mantissaMSb
+	vbroadcastss ymm2, [r8 + 0x08] ;exponent
+	vbroadcastss ymm3, [r8 + 0x0C] ;mantissa
+	vbroadcastss ymm4, [r8 + 0x10] ;A
+	vbroadcastss ymm5, [r8 + 0x14] ;B
+	vbroadcastss ymm6, [r8 + 0x18] ;C
+	vbroadcastss ymm7, [r8 + 0x1C] ;D
+	vbroadcastss ymm8, [r8 + 0x20] ;E
+	vbroadcastss ymm9, [r8 + 0x24] ;log10of2L (low translate)
+	vbroadcastss ymm10,[r8 + 0x28] ;log10of2H (high translate)
+	vbroadcastss ymm11,[r8 + 0x2C] ;clamp value
+	
+	mov r10, rcx
+	add r10, strideBytes
+	
+	.outerLoop:
+	
+		mov eax, 65 ;ceil(513/8)
+		
+		.innerLoop:
+			
+			vmovaps ymm12, [rcx] ;Load real value
+			vmovaps ymm13, [r10] ;Load imag value
+			add rcx, 0x20
+			add r10, 0x20
+			
+			vmulps ymm12, ymm12, ymm12
+			vfmadd231ps ymm12, ymm13, ymm13
+			;ymm12 now has abs of fftData (real * real) + (imag * imag)
+			
+			vmaxps ymm12, ymm12, ymm11 ;Clamp ymm12
+			
+			vmovaps ymm13, ymm0 ;ymm13 = bias ...better mov ?
+			vpand ymm14, ymm12, ymm1 ;ymm14 = mantissaMSb
+			vpand ymm15, ymm12, ymm3 ;ymm15 = mantissa
+			
+			vpslld ymm14, ymm14, 1
+			vpsubd ymm13, ymm13, ymm14		
+			vpand ymm13, ymm13, ymm0
+			vpor ymm13, ymm13, ymm15
+			
+			vpand ymm15, ymm12, ymm2 ;ymm15 = exponent
+			vsubps ymm13, ymm13, ymm0
+			vpaddd ymm15, ymm15, ymm14
+			vmovaps ymm12, ymm4
+			vpsubd ymm15, ymm15, ymm0
+			
+			vfmadd213ps ymm12, ymm13, ymm5
+			vaddps ymm14, ymm13, ymm7
+			vpsrad ymm15, ymm15, 23
+			
+			vfmadd213ps ymm12, ymm13, ymm6
+			vfmadd213ps ymm14, ymm13, ymm8
+			vcvtdq2ps ymm15, ymm15
+			
+			vmulps ymm12, ymm12, ymm13
+			vdivps ymm12, ymm12, ymm14
+			vaddps ymm12, ymm12, ymm15
+			
+			vmulps ymm13, ymm12, ymm9
+			vfmadd231ps ymm13, ymm12, ymm10
+			
+			vmovaps [rdx], ymm13 ;Store fftAbs		
+			add rdx, 0x20
+			
+			dec eax
+		jnz .innerLoop
+		
+		add rcx, strideBytes
+		add r10, strideBytes
+		
+		add rdx, 1120
+		
+		dec r9
+	jnz .outerLoop
+	
+ret ;End of absClampLog
 
 
 public computeMAT5Max0asm
@@ -762,82 +842,8 @@ computeMAT1asm: ;rax: return value, rcx: matrixPtr, rdx: inputPtr, r8: iteration
 ret ;End of computeMAT1asm
 
 
-public absClampLog
-absClampLog:
-;rax: return value, rcx: fftDataPtr, rdx: fftAbsPtr, r8: logConstantPtr, r9: ???
-	
-	vbroadcastss ymm0, [r8 + 0x00] ;+1.0f
-	vbroadcastss ymm1, [r8 + 0x04] ;mantissaMSb
-	vbroadcastss ymm2, [r8 + 0x08] ;exponent
-	vbroadcastss ymm3, [r8 + 0x0C] ;mantissa
-	vbroadcastss ymm4, [r8 + 0x10] ;A
-	vbroadcastss ymm5, [r8 + 0x14] ;B
-	vbroadcastss ymm6, [r8 + 0x18] ;C
-	vbroadcastss ymm7, [r8 + 0x1C] ;D
-	vbroadcastss ymm8, [r8 + 0x20] ;E
-	vbroadcastss ymm9, [r8 + 0x24] ;log10of2L (low translate)
-	vbroadcastss ymm10,[r8 + 0x28] ;log10of2H (high translate)
-	vbroadcastss ymm11,[r8 + 0x2C] ;clamp value
-	
-	mov r10, rcx
-	add r10, 0x820 ;halfway
-	
-	mov eax, 65 ;ceil(513/8)
-	
-	.innerLoop:
-		
-		vmovaps ymm12, [rcx] ;Load real value
-		vmovaps ymm13, [r10] ;Load imag value
-		add rcx, 0x20
-		add r10, 0x20
-		
-		vmulps ymm12, ymm12, ymm12
-		vfmadd231ps ymm12, ymm13, ymm13
-		;ymm12 now has abs of fftData (real * real) + (imag * imag)
-		
-		vmaxps ymm12, ymm12, ymm11 ;Clamp ymm12
-		
-		vmovaps ymm13, ymm0 ;ymm13 = bias ...better mov ?
-		vpand ymm14, ymm12, ymm1 ;ymm14 = mantissaMSb
-		vpand ymm15, ymm12, ymm3 ;ymm15 = mantissa
-		
-		vpslld ymm14, ymm14, 1
-		vpsubd ymm13, ymm13, ymm14		
-		vpand ymm13, ymm13, ymm0
-		vpor ymm13, ymm13, ymm15
-		
-		vpand ymm15, ymm12, ymm2 ;ymm15 = exponent
-		vsubps ymm13, ymm13, ymm0
-		vpaddd ymm15, ymm15, ymm14
-		vmovaps ymm12, ymm4
-		vpsubd ymm15, ymm15, ymm0
-		
-		vfmadd213ps ymm12, ymm13, ymm5
-		vaddps ymm14, ymm13, ymm7
-		vpsrad ymm15, ymm15, 23
-		
-		vfmadd213ps ymm12, ymm13, ymm6
-		vfmadd213ps ymm14, ymm13, ymm8
-		vcvtdq2ps ymm15, ymm15
-		
-		vmulps ymm12, ymm12, ymm13
-		vdivps ymm12, ymm12, ymm14
-		vaddps ymm12, ymm12, ymm15
-		
-		vmulps ymm13, ymm12, ymm9
-		vfmadd231ps ymm13, ymm12, ymm10
-		
-		vmovaps [rdx], ymm13 ;Store fftAbs		
-		add rdx, 0x20
-		
-		dec eax
-	jnz .innerLoop
-	
-ret ;End of absClampLog
-
-
 public sigmoidClampMultiply
-sigmoidClampMultiply: ;rax: return value, rcx: mat4OutputPtr, rdx: fftDataPtr, r8: expConstantPtr, r9: ???
+sigmoidClampMultiply: ;rax: return value, rcx: mat4OutputPtr, rdx: fftDataPtr, r8: expConstantPtr, r9: conversions
 	
 	vbroadcastss ymm1, [r8 + 0x00] ;-log2(e)
 	vbroadcastss ymm2, [r8 + 0x04] ;-ln(2) high
@@ -854,55 +860,66 @@ sigmoidClampMultiply: ;rax: return value, rcx: mat4OutputPtr, rdx: fftDataPtr, r
 	mov r10, rdx
 	add r10, 0x820
 	
-	mov eax, 65 ;ceil(513/8)
+	.outerLoop:
 	
-	.innerLoop:
+		mov eax, 65 ;ceil(513/8)
 		
-		vmovaps ymm11, [rcx] ;Load value
-		add rcx, 0x20
+		.innerLoop:
+			
+			vmovaps ymm11, [rcx] ;Load value
+			add rcx, 0x20
+			
+			vmaxps ymm11, ymm11, ymm9 ;Input range check (needed?)
+			
+			vmovaps ymm14, [rdx] ;Load fftData
+			vmovaps ymm15, [r10] ;Load fftDataH
+			
+			vmulps ymm12, ymm1, ymm11
+			vroundps ymm13, ymm12, 00b;{rn-sae} ;round to nearest
+			
+			vfmsub231ps ymm11, ymm2, ymm13
+			vfmadd231ps ymm11, ymm3, ymm13
+			
+			vcvtps2dq ymm12, ymm12
+			vpslld ymm12, ymm12, 23 ;mantissa length
+			
+			vmovaps ymm13, ymm4
+			vfmadd213ps ymm13, ymm11, ymm5
+			vfmadd213ps ymm13, ymm11, ymm6
+			vfmadd213ps ymm13, ymm11, ymm7
+			vfmadd213ps ymm13, ymm11, ymm8
+			vfmadd213ps ymm13, ymm11, ymm0
+			vfmadd213ps ymm13, ymm11, ymm0 ;extra polynomial precision
+			
+			vpaddd ymm11, ymm12, ymm13
+			
+			vaddps ymm11, ymm0, ymm11
+			vdivps ymm11, ymm0, ymm11
+			;sigmoid result is in ymm11
+			
+			vmaxps ymm11, ymm11, ymm10 ;Clamp
+			
+			vmulps ymm14, ymm14, ymm11
+			vmulps ymm15, ymm15, ymm11
+			
+			vmovaps [rdx], ymm14 ;Store modified fftData
+			vmovaps [r10], ymm15 ;Store modified fftDataH
+			;vmovaps?
+			
+			add rdx, 0x20
+			add r10, 0x20
+			
+			dec eax
+		jnz .innerLoop
 		
-		vmaxps ymm11, ymm11, ymm9 ;Input range check (needed?)
 		
-		vmovaps ymm14, [rdx] ;Load fftData
-		vmovaps ymm15, [r10] ;Load fftDataH
+		add rcx, 1120
 		
-		vmulps ymm12, ymm1, ymm11
-		vroundps ymm13, ymm12, 00b;{rn-sae} ;round to nearest
+		add rdx, strideBytes
+		add r10, strideBytes
 		
-		vfmsub231ps ymm11, ymm2, ymm13
-		vfmadd231ps ymm11, ymm3, ymm13
-		
-		vcvtps2dq ymm12, ymm12
-		vpslld ymm12, ymm12, 23 ;mantissa length
-		
-		vmovaps ymm13, ymm4
-		vfmadd213ps ymm13, ymm11, ymm5
-		vfmadd213ps ymm13, ymm11, ymm6
-		vfmadd213ps ymm13, ymm11, ymm7
-		vfmadd213ps ymm13, ymm11, ymm8
-		vfmadd213ps ymm13, ymm11, ymm0
-		vfmadd213ps ymm13, ymm11, ymm0 ;extra polynomial precision
-		
-		vpaddd ymm11, ymm12, ymm13
-		
-		vaddps ymm11, ymm0, ymm11
-		vdivps ymm11, ymm0, ymm11
-		;sigmoid result is in ymm11
-		
-		vmaxps ymm11, ymm11, ymm10 ;Clamp
-		
-		vmulps ymm14, ymm14, ymm11
-		vmulps ymm15, ymm15, ymm11
-		
-		vmovaps [rdx], ymm14 ;Store modified fftData
-		vmovaps [r10], ymm15 ;Store modified fftDataH
-		;vmovaps?
-		
-		add rdx, 0x20
-		add r10, 0x20
-		
-		dec eax
-	jnz .innerLoop
+		dec r9
+	jnz .outerLoop
 	
 ret ;End of sigmoidClampMultiply
 

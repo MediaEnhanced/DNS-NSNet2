@@ -43,7 +43,7 @@
 #include "Win32Performance.h" //Windows Performance Counter Helper File
 
 #define CONVERSION_SEGMENTS 2000 //20sec converted at a time, can be changed to 1 for quasi-realtime live version
-#define EXTRA_TIMING 0
+#define EXTRA_TIMING 1
 
 //link in externaly created hannWindow.o "compiled" data file
 extern float _binary___hannWindow_data_start[];
@@ -96,8 +96,8 @@ extern int computeMAT8NoMaxasm(uint64_t iterations, float* matrixPtr, float* inp
 extern int computeMAT5NoMaxasm(uint64_t iterations, float* matrixPtr, float* inputPtr, float* outputPtr);
 extern int computeGRUasm32(threadParameters3T*);
 extern int computeMAT1asm(float* matrixPtr, float* inputPtr, uint64_t iterations, float* outputPtr);
-extern int absClampLog(float* fftDataPtr, float* fftAbsPtr, float* logConstantPtr);
-extern int sigmoidClampMultiply(float* mat4OutputPtr, float* fftDataPtr, float* expConstantPtr);
+extern int absClampLog(float* fftDataPtr, float* fftAbsPtr, float* logConstantPtr, uint64_t conversions);
+extern int sigmoidClampMultiply(float* mat4OutputPtr, float* fftDataPtr, float* expConstantPtr, uint64_t conversions);
 
 #define DATA_FILE_LOCATION		L"networkData.bin" //neural network calculation data file name
 #define INPUT_FILE_LOCATION		L"input.wav" //initial name of input file
@@ -645,7 +645,7 @@ int performConversion(HANDLE inFileHandle, HANDLE outFileHandle) {
 	
 	memcpy(adjHannWindowInv, adjHannWindow, FRAMES_IN_WINDOW * sizeof(float));
 	
-	memset(windowDataAccum, 0, (480) * sizeof(float));
+	memset(windowDataAccum, 0, (480) * sizeof(float)); //Might want to change this...
 	
 	memset(calcDat1, 0, (600+8) * sizeof(float));
 	memset(calcDat2, 0, (600+8) * sizeof(float));
@@ -791,11 +791,7 @@ int performConversion(HANDLE inFileHandle, HANDLE outFileHandle) {
 		
 		fftDataT = fftDataM;
 		float* calcDat1T = calcDat1 + 800;
-		for (int c=0; c<conversions; c++) {
-			absClampLog(fftDataT, calcDat1T, logConstants);
-			fftDataT += 1040;
-			calcDat1T += 800;
-		}
+		absClampLog(fftDataT, calcDat1T, logConstants, conversions);
 		
 #if EXTRA_TIMING == 1		
 		LONGLONG fftAbsTime = 0;
@@ -1129,11 +1125,7 @@ int performConversion(HANDLE inFileHandle, HANDLE outFileHandle) {
 		
 		fftDataT = fftDataM;
 		calcDat1T = calcDat1 + 800;
-		for (int c=0; c<conversions; c++) {
-			sigmoidClampMultiply(calcDat1T, fftDataT, expConstants);
-			fftDataT += 1040;
-			calcDat1T += 800;
-		}
+		sigmoidClampMultiply(calcDat1T, fftDataT, expConstants, conversions);
 		
 		fftDataT = fftDataM;
 		for (int c=0; c<conversions; c++) {
@@ -1215,6 +1207,12 @@ int main(int argc, char* argv[]) {
 	LONGLONG startTime = 0;
 	Win32PerformanceGetCount(&startTime);
 	
+	
+	TCHAR directoryBuffer[200];
+	DWORD dirRes = GetCurrentDirectory(200, directoryBuffer);
+	printf("Current Directory: %ls\n", directoryBuffer);
+	
+	
 	HANDLE dataFileHandle = CreateFile(DATA_FILE_LOCATION, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (dataFileHandle == NULL) {
 		printf("Problem opening input data file\n");
@@ -1260,7 +1258,7 @@ int main(int argc, char* argv[]) {
 	//More parameters...
 	
 	BOOL openFileResult = 1;
-	openFileResult = GetOpenFileName(&openFileInfo);
+	//openFileResult = GetOpenFileName(&openFileInfo);
 	if (openFileResult == 0) {
 		printf("Conversion Canceled\n");
 		return 3;
@@ -1276,7 +1274,6 @@ int main(int argc, char* argv[]) {
 		return 4;
 	}
 	
-	//
 	printf("%ls -> ", fileNameStr);
 	
 	fileNameStr[openFileInfo.nFileExtension-1] = 0;
