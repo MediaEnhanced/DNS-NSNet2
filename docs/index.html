@@ -21,7 +21,7 @@
 		<h3>A fast an easy way to use a trained deep learning AI model to suppress unwanted noise in audio!</h3>
 		<section id="exampleSection">
 			<h4>Example</h4>
-			<iframe id="exampleVideo" width="640" height="360" src="https://www.youtube-nocookie.com/embed/eQEGPATQe5s?enablejsapi=1" title="YouTube Video Player" frameborder="0"></iframe>
+			<iframe id="exampleVideo" width="640" height="360" src="https://www.youtube-nocookie.com/embed/eQEGPATQe5s?rel=0&enablejsapi=1" title="YouTube Video Player" frameborder="0"></iframe>
 			<audio  id ="exampleAudio" src="example-Enhanced.opus">
 				Your browser does not support the <code>audio</code> element.
 			</audio>
@@ -47,6 +47,8 @@
 		
 		var audio = document.getElementById('exampleAudio');
 		audio.volume = 0.0;
+		audio.play();
+		audio.pause();
 		
 		var player;
 		function onYouTubeIframeAPIReady() {
@@ -64,7 +66,7 @@
 		}
 
 		function onPlayerStateChange(event) {
-			console.log("player State Changed: " + event.data);
+			//console.log("player State Changed: " + event.data);
 			if (event.data === 1) {
 				audio.currentTime = player.getCurrentTime();
 				audio.play();
@@ -79,7 +81,7 @@
 		var enhancedButton = document.getElementById('exampleEnhanced');
 		
 		function originalClicked(event) {
-			console.log("OriginalClicked");
+			//console.log("OriginalClicked");
 			originalButton.style.backgroundColor = 'Navy';
 			enhancedButton.style.backgroundColor = 'SteelBlue';
 			
@@ -88,12 +90,12 @@
 		}
 		
 		function enhancedClicked(event) {
-			console.log("EnhancedClicked");
+			//console.log("EnhancedClicked");
 			enhancedButton.style.backgroundColor = 'Navy';
 			originalButton.style.backgroundColor = 'SteelBlue';
 			
 			player.mute();
-			audio.volume = 1.0;
+			audio.volume = player.getVolume() / 100.0;
 		}
 		
 		originalButton.addEventListener('click', originalClicked, false);
