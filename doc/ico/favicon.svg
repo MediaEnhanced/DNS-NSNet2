@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="80" height="80" viewBox="0 0 80 80" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-  <g>
-    <path
-       style="fill:none;stroke:#000080;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 5,40 c 0,0 2.5,-15 5,-15 5,0 5,40 10,40 5,0 5,-60 10,-60 5,0 5,70 10,70 5,0 5,-70 10,-70 5,0 5,60 10,60 5,0 5,-40 10,-40 2.5,0 5,15 5,15"
-		/>
-  </g>
-</svg>
