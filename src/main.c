@@ -1258,7 +1258,7 @@ int main(int argc, char* argv[]) {
 	//More parameters...
 	
 	BOOL openFileResult = 1;
-	//openFileResult = GetOpenFileName(&openFileInfo);
+	openFileResult = GetOpenFileName(&openFileInfo);
 	if (openFileResult == 0) {
 		printf("Conversion Canceled\n");
 		return 3;
