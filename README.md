@@ -1,7 +1,7 @@
 # Deep Noise Suppression - NSNet2
 &emsp;&emsp;NSNet2 is a deep learning artificial recurrent neural network (RNN) used for background noise reduction in speech audio files. Microsoft originally released NSNet2 as an updated comparision baseline for their annual Deep Noise Suppression (DNS) [challenge](https://github.com/microsoft/DNS-Challenge/tree/master/NSNet2-baseline), but it is inconvient to use and is not suited for real-time processing. Use of the released NSNet2 model requires correct versions of Python and supporting libarires (including PyTorch and [ONNXruntime](https://github.com/microsoft/onnxruntime)) to be installed and properly linked together. These are relatively big software packages to install and configure just to run this one neural network model. Running NSNet2 without any changes also uses massive amounts of uneccessary memory (RAM) that scales with the size of the audio file.
 
-&emsp;&emsp;Currently there are not many wide-range, pre-trained, and effective noise suppressors for speech that can be used easily. Projects like [RNNoise](https://github.com/xiph/rnnoise) have several quirks, but NSNet2 can be the next-step-up for fine-tuning captured speech. NSNet2 just needed to be converted to a version that more people looking for additional audio filters for recorded speech could utilize, which is the major focus of this project. This nameless project is a user friendly conversion of the NSNet2 released by Microsoft Research.
+&emsp;&emsp;Currently there are not many wide-range, pre-trained, and effective noise suppressors for speech that can be used easily. Projects like [RNNoise](https://github.com/xiph/rnnoise) have several quirks, but NSNet2 can be the next-step-up for fine-tuning captured speech. NSNet2 just needed to be converted to a version that more people looking for additional audio filters for recorded speech could utilize, which is the major focus of this project. This nameless project is a user friendly conversion of the NSNet2 released by Microsoft Research. An example where this software was applied can be found on this project's [website](https://mediaenhanced.github.io/DNS-NSNet2/).
   
 &nbsp;
 
@@ -48,7 +48,7 @@ TO ADD (pre-process with Audacity Noise Reduction Effect)
   
 &nbsp;
 
-## Current Limitations; Version 0.1
+## Current Limitations; Version 0.1.1
 1. Works only with 48kHz 1-Channel (Mono) Wave Audio Files
 2. Offline Version Released Only
 3. Does not convert 2-Channel (Stereo) Audio
